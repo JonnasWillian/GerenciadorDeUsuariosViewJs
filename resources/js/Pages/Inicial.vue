@@ -1,4 +1,12 @@
-<script></script>
+<script>
+    import { Link } from '@inertiajs/vue3';
+
+    export default {
+        components: {
+            Link
+        }
+    };
+</script>
 
 <template>
    <div class="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
@@ -10,8 +18,12 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <button class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Login</button>
-                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-all">Começar Agora</button>
+                    <Link :href="route('login')">
+                        <button class="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Login</button>
+                    </Link>
+                    <Link :href="route('register')">
+                        <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-all">Começar Agora</button>
+                    </Link>
                 </div>
             </div>
         </div>
@@ -87,9 +99,11 @@
             <p class="text-lg text-indigo-200 mb-8 max-w-2xl mx-auto">
             Junte-se a milhares de empresas que já confiam em nossa plataforma para gerenciar seus usuários.
             </p>
-            <button class="bg-white text-indigo-600 hover:bg-indigo-50 px-8 py-4 rounded-lg text-lg font-semibold transition-all transform hover:scale-105">
-            Criar Conta Gratuita
-            </button>
+            <Link :href="route('register')">
+                <button class="bg-white text-indigo-600 hover:bg-indigo-50 px-8 py-4 rounded-lg text-lg font-semibold transition-all transform hover:scale-105">
+                Criar Conta Gratuita
+                </button>
+            </Link>
         </div>
     </div>
 
