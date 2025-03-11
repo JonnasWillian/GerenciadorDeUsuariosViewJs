@@ -16,7 +16,11 @@ return new class extends Migration
             $table->string('nome');
             $table->string('email')->unique();
             $table->string('descricao')->nullable();
-            $table->integer('telefone');
+            $table->bigInteger('telefone');
+
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+
             $table->rememberToken();
             $table->timestamps();
         });

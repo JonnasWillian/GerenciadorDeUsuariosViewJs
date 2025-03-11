@@ -8,9 +8,9 @@ use App\Models\Usuario;
 
 class Userarios extends Controller
 {
-    public function view()
+    public function view(Request $request)
     {
-        $usuarios = Usuario::all();
+        $usuarios = Usuario::where('user_id', $request->user_id)->get();
         
         return response()->json($usuarios);
     }
@@ -21,8 +21,9 @@ class Userarios extends Controller
             $validateRequest = $request->validate([
                 'nome' => 'required|string|min:5',
                 'email' => 'required|email|unique:usuarios,email',
-                'telefone' => 'required|string|min:7',
+                'telefone' => 'required|string',
                 'descricao' => 'nullable|string',
+                'user_id' => 'required',
             ]);
 
             Usuario::create($validateRequest);

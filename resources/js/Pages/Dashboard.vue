@@ -3,23 +3,27 @@
     import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
     import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
     import axios from 'axios';
+    import { vMaska } from 'maska/vue';
 
     const usuarios = ref([]);
     const isModalOpen = ref(false);
+    const user = computed(() => usePage().props.auth.user);
 
     const form = useForm({
         nome: '',
         email: '',
         telefone: '',
         descricao: '',
+        user_id: user.value.id
     });
 
     const buscarUsuarios = async () => {
-        const resposta = await axios.get(`/api/usuarios`);
+        const resposta = await axios.post(`/api/pegarUsuarios`, {user_id: user.value.id});
         usuarios.value = resposta.data;
     }
 
     const addUsuario = async () => {
+        form.telefone = form.telefone.replace(/\D/g, '');
         try {
             const response = await axios.post('api/usuarios', {
                 ...form
@@ -108,7 +112,7 @@
                         <div class="space-y-4">
                             <input type="text" placeholder="Nome" v-model="form.nome" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                             <input type="email" placeholder="Email" v-model="form.email" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                            <input type="tel" placeholder="Telefone" v-model="form.telefone" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <input type="tel" placeholder="Telefone" v-model="form.telefone" v-maska data-maska="(##) #####-####" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                             <input type="text" placeholder="Descrição" v-model="form.descricao" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                         </div>
                         <div class="flex justify-end mt-6">
