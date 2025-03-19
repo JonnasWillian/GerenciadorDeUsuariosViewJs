@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 use App\Models\Usuario;
 
@@ -34,6 +35,17 @@ class Userarios extends Controller
                 'erros' => $error->errors()
             ], 422);
         }
+    }
+
+    public function perfilUsuario(){
+        return Inertia::render('Usuario/Perfil');
+    }
+
+    public function viewUsuario($id)
+    {
+        $usuario = Usuario::where('id', $id)->get();
+
+        return response()->json($usuario);
     }
 
     public function update(Request $request, $id)
