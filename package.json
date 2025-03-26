@@ -19,6 +19,7 @@
         "vue": "^3.4.0"
     },
     "dependencies": {
+        "lucide-vue-next": "^0.484.0",
         "mask": "^0.2.2",
         "maska": "^3.1.0"
     }
