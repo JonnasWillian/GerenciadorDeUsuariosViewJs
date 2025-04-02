@@ -5,6 +5,7 @@ import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
 import axios from 'axios';
 import { vMaska } from 'maska/vue';
 import { PlusCircle, FileText, Paperclip, Trash2, Edit, Save, X, Download } from 'lucide-vue-next';
+import Swal from 'sweetalert2';
 
 const user = computed(() => usePage().props.auth.user);
 const props = defineProps({
@@ -31,10 +32,34 @@ const buscarUsuario = async (id) => {
     try {
         const response = await axios.get(`/api/usuarioPerfil/${id}`);
         usuario.value = response.data[0];
+
+        console.log('usuario', usuario.value)
     } catch (error) {
         console.error("Erro ao buscar usuario:", error);
     }
 };
+
+const editarUsuario = async () => {
+    usuario.value.telefone = usuario.value.telefone.replace(/\D/g, '');
+
+    try {
+        const response = await axios.put(`api/usuarios/${usuario.value.id}`, {
+            ...usuario.value
+        })
+
+        await Swal.fire({
+            title: 'Sucesso!',
+            text: 'Usuário atualizado com sucesso!',
+            icon: 'success',
+            confirmButtonText: 'Ok'
+        });
+
+        router.visit(route('perfilUsuario'))
+    } catch (error) {
+        alert('Erro ao atualizar usuário!');
+        console.log('error', error)
+    }
+}
 
 onMounted(() => {
     const idPerfil = sessionStorage.getItem('idPerfil');
@@ -70,11 +95,10 @@ onMounted(() => {
                                 <h1 class="text-2xl font-bold text-gray-800">{{ usuario.nome }}</h1>
                             </div>
                             <div class="mt-4 md:mt-0">
-                                <Link :href="`/editar-usuario/${usuario.id}`" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:border-blue-800 focus:ring ring-blue-300 disabled:opacity-25 transition">
-                                    <!-- Função de editar dados do usuario -->
+                                <p @click="editarUsuario()" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-800 focus:outline-none focus:border-blue-800 focus:ring ring-blue-300 disabled:opacity-25 transition">
                                     <Edit class="w-4 h-4 mr-2" />
                                     Editar Usuario
-                                </Link>
+                                </p>
                             </div>
                         </div>
                     </div>
