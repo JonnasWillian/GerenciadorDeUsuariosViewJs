@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 use App\Models\Usuario;
+use App\Models\Anotacao;
 
 class Userarios extends Controller
 {
@@ -85,6 +86,54 @@ class Userarios extends Controller
             ], 422);
         } catch (\Exception $error) {
             return response()->json(['error' => 'Usuário não encontrado'], 201);
+        }
+    }
+
+    public function viewAnotacao($id)
+    {
+        $anotacoes = Anotacao::where('usuario_id', $id)->get();
+
+        return response()->json($anotacoes);
+    }
+
+
+    public function createAnotacao(Request $request)
+    {
+        try {
+            $validateRequest = $request->validate([
+                'descricao' => 'required|string',
+                'usuario_id' => 'required',
+            ]);
+
+            Anotacao::create($validateRequest);
+
+            return response()->json(['message' => 'Anotação cadastrada com sucesso'], 201);
+        } catch (\Illuminate\Validation\ValidationException $error) {
+            return response()->json([
+                'erros' => $error->errors()
+            ], 422);
+        }
+    }
+
+
+    public function updateAnotacao(Request $request, $id)
+    {
+        try {
+            $anotacao = Anotacao::findOrFail($id);
+            
+            $validateRequest = $request->validate([
+                'descricao' => 'required|string',
+            ]);
+
+            $anotacao->update($validateRequest);
+
+            return response()->json(['message' => 'Anotação atualizada com sucesso'], 201);
+        } catch (\Illuminate\Validation\ValidationException $error) {
+            return response()->json([
+                'erros' => $error->errors()
+            ], 422);
+        } catch (\Exception $error) {
+            return response()->json(['error' => 'Anotação não encontrado'], 201);
         }
     }
 }
