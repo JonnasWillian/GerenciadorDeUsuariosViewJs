@@ -21,13 +21,18 @@ const showAddNote = ref(false);
 const isUploading = ref(false);
 const uploadProgress = ref(0);
 
-// Formulário para anotações
 const noteForm = useForm({
-    conteudo: '',
-    usuario_id: null,
-    user_id: user.value.id,
+    descricao: '',
+    usuario_id: user.value.id,
 });
 
+const editNoteForm = useForm({
+    id: '',
+    descricao: '',
+    usuario_id: user.value.id,
+});
+
+// Usuário
 const buscarUsuario = async (id) => {
     try {
         const response = await axios.get(`/api/usuarioPerfil/${id}`);
@@ -61,10 +66,43 @@ const editarUsuario = async () => {
     }
 }
 
+// Anotação
+const buscarAnotacao = async (id) => {
+    try {
+        const response = await axios.get(`/api/anotacao/${id}`);
+        console.log('anotacoes', response.data)
+        anotacoes.value = response.data;
+
+    } catch (error) {
+        console.error("Erro ao buscar usuario:", error);
+    }
+};
+
+const cadastrarAnotacao = async () => {
+    try {
+        const response = await axios.post(`api/anotacao`, {
+            ...noteForm
+        })
+
+        await Swal.fire({
+            title: 'Sucesso!',
+            text: 'Anotação criada com sucesso!',
+            icon: 'success',
+            confirmButtonText: 'Ok'
+        });
+
+        router.visit(route('perfilUsuario'))
+    } catch (error) {
+        alert('Erro ao atualizar usuário!');
+        console.log('error', error)
+    }
+}
+
 onMounted(() => {
     const idPerfil = sessionStorage.getItem('idPerfil');
     if (idPerfil) {
         buscarUsuario(idPerfil);
+        buscarAnotacao(idPerfil);
     } else {
         router.visit(route('dashboard'));
     }
@@ -193,7 +231,7 @@ onMounted(() => {
                             <!-- Formulário para adicionar anotação -->
                             <div v-if="showAddNote" class="bg-gray-50 p-4 rounded-md">
                                 <textarea 
-                                    v-model="noteForm.conteudo" 
+                                    v-model="noteForm.descricao" 
                                     rows="4" 
                                     class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     placeholder="Digite sua anotação aqui..."
@@ -207,9 +245,9 @@ onMounted(() => {
                                         Cancelar
                                     </button>
                                     <button 
-                                        @click="adicionarAnotacao" 
+                                        @click="cadastrarAnotacao()" 
                                         class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                        :disabled="!noteForm.conteudo"
+                                        :disabled="!noteForm.descricao"
                                     >
                                         <Save class="w-4 h-4 mr-2" />
                                         Salvar
@@ -223,7 +261,7 @@ onMounted(() => {
                                     <div class="flex justify-between items-start">
                                         <div class="flex items-center text-sm text-gray-500">
                                             <FileText class="w-4 h-4 mr-2" />
-                                            <span>{{ formatarData(anotacao.created_at) }}</span>
+                                            <span>{{ anotacao.descricao }}</span>
                                         </div>
                                         <div class="flex space-x-2">
                                             <button 
@@ -251,7 +289,7 @@ onMounted(() => {
                                     <!-- Edição da anotação -->
                                     <div v-else class="mt-2">
                                         <textarea 
-                                            v-model="editNoteForm.conteudo" 
+                                            v-model="editNoteForm.descricao" 
                                             rows="4" 
                                             class="w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         ></textarea>
@@ -327,7 +365,7 @@ onMounted(() => {
                                                 <div class="text-sm text-gray-500">{{ formatarTamanho(arquivo.tamanho || 0) }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-500">{{ formatarData(arquivo.created_at) }}</div>
+                                                <div class="text-sm text-gray-500">{{ arquivo.descricao }}</div>    
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                 <div class="flex space-x-2">

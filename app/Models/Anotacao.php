@@ -12,6 +12,6 @@ class Anotacao extends Model
 
     protected $fillable = [
         'descricao',
-        'usario_id',
+        'usuario_id',
     ];
 }
