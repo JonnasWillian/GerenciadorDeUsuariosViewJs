@@ -20,6 +20,7 @@ const editingNoteId = ref(null);
 const showAddNote = ref(false);
 const isUploading = ref(false);
 const uploadProgress = ref(0);
+const idPerfil = sessionStorage.getItem('idPerfil');
 
 const noteForm = useForm({
     descricao: '',
@@ -98,8 +99,38 @@ const cadastrarAnotacao = async () => {
     }
 }
 
+const editarAnotacao = (anotacao) => {
+    editNoteForm.id = anotacao.id;;
+    editNoteForm.descricao = anotacao.descricao
+    editingNoteId.value = anotacao.id;
+}
+
+const cancelarEdicaoAnotacao = () => {
+    editingNoteId.value = null;
+}
+
+const salvarEdicaoAnotacao = async () => {
+    try {
+        console.log('editNoteForm', editNoteForm)
+        await axios.put(`api/anotacao/${editNoteForm.id}`,editNoteForm);
+        buscarAnotacao(idPerfil)
+        editingNoteId.value = null;
+    } catch (error) {
+        console.log('error', error)
+    }
+}
+
+const excluirAnotacao = async () => {
+    try {
+        console.log('editNoteForm', editNoteForm)
+        await axios.delete(`api/anotacao/${editNoteForm.id}`,editNoteForm);
+        buscarAnotacao(idPerfil)
+    } catch (error) {
+        console.log('error', error)
+    }
+}
+
 onMounted(() => {
-    const idPerfil = sessionStorage.getItem('idPerfil');
     if (idPerfil) {
         buscarUsuario(idPerfil);
         buscarAnotacao(idPerfil);
