@@ -136,4 +136,20 @@ class Userarios extends Controller
             return response()->json(['error' => 'Anotação não encontrado'], 201);
         }
     }
+
+    public function destroyAnotacao(Request $request, $id)
+    {
+        try {
+            $anotacao = Anotacao::findOrFail($id);
+            $anotacao->delete();
+
+            return response()->json(['message' => 'Anotação deletada com sucesso'], 201);
+        } catch (\Illuminate\Validation\ValidationException $error) {
+            return response()->json([
+                'erros' => $error->errors()
+            ], 422);
+        } catch (\Exception $error) {
+            return response()->json(['error' => 'Anotação não encontrada'], 201);
+        }
+    }
 }

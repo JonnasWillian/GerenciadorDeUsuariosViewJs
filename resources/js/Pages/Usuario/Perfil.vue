@@ -33,6 +33,15 @@ const editNoteForm = useForm({
     usuario_id: user.value.id,
 });
 
+const messageError = async (messagem) => {
+    await Swal.fire({
+        title: 'Erro!',
+        text: messagem,
+        icon: 'error',
+        confirmButtonText: 'Ok'
+    });
+}
+
 // Usuário
 const buscarUsuario = async (id) => {
     try {
@@ -41,6 +50,7 @@ const buscarUsuario = async (id) => {
 
         console.log('usuario', usuario.value)
     } catch (error) {
+        messageError("Erro ao buscar usuário!")
         console.error("Erro ao buscar usuario:", error);
     }
 };
@@ -62,7 +72,7 @@ const editarUsuario = async () => {
 
         router.visit(route('perfilUsuario'))
     } catch (error) {
-        alert('Erro ao atualizar usuário!');
+        messageError("Erro ao atualizar usuário!")
         console.log('error', error)
     }
 }
@@ -75,7 +85,7 @@ const buscarAnotacao = async (id) => {
         anotacoes.value = response.data;
 
     } catch (error) {
-        console.error("Erro ao buscar usuario:", error);
+        messageError("Erro ao buscar anotação usuário!")
     }
 };
 
@@ -94,7 +104,7 @@ const cadastrarAnotacao = async () => {
 
         router.visit(route('perfilUsuario'))
     } catch (error) {
-        alert('Erro ao atualizar usuário!');
+        messageError("Erro ao atualizar usuário!")
         console.log('error', error)
     }
 }
@@ -117,14 +127,39 @@ const salvarEdicaoAnotacao = async () => {
         editingNoteId.value = null;
     } catch (error) {
         console.log('error', error)
+        messageError("Erro ao editar anotação!")
     }
 }
 
-const excluirAnotacao = async () => {
+const excluirAnotacao = async (id) => {
     try {
-        console.log('editNoteForm', editNoteForm)
-        await axios.delete(`api/anotacao/${editNoteForm.id}`,editNoteForm);
-        buscarAnotacao(idPerfil)
+        console.log('editNoteForm', id)
+        const result = await Swal.fire({
+            title: 'Confirmação de exclusão',
+            text: 'Você deseja, realmente apagar esta anotação?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Excluir',
+            cancelButtonText: 'Não',
+            reverseButtons: true
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await axios.delete(`api/anotacao/${id}`);
+                buscarAnotacao(idPerfil)
+
+                await Swal.fire({
+                    title: 'Sucesso!',
+                    text: 'Anotação deletada com sucesso!',
+                    icon: 'success',
+                    confirmButtonText: 'Ok'
+                });
+            } catch (error) {
+                console.log(error)
+                messageError("Erro ao apagar anotação!")
+            }
+        }
     } catch (error) {
         console.log('error', error)
     }
@@ -226,7 +261,7 @@ onMounted(() => {
                                                     <p class="text-xs text-gray-500">Telefone</p>
                                                     <input v-model="usuario.telefone" class="text-sm font-medium" v-maska data-maska="(##) #####-####"/>
                                                 </div>
-                                                <div v-if="usuario.descricao">
+                                                <div>
                                                     <p class="text-xs text-gray-500">Descrição</p>
                                                     <input class="text-sm font-medium" v-model="usuario.descricao" type="text">
                                                 </div>

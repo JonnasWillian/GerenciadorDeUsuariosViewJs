@@ -18,3 +18,4 @@ Route::delete('/usuarios/{usuario}', [Userarios::class, 'destroy']);
 Route::get('/anotacao/{id}', [Userarios::class, 'viewAnotacao']);
 Route::post('/anotacao', [Userarios::class, 'createAnotacao']);
 Route::put('/anotacao/{id}', [Userarios::class, 'updateAnotacao']);
+Route::delete('/anotacao/{id}', [Userarios::class, 'destroyAnotacao']);
