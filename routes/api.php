@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Userarios;
+use App\Http\Controllers\arquivo;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -19,3 +20,5 @@ Route::get('/anotacao/{id}', [Userarios::class, 'viewAnotacao']);
 Route::post('/anotacao', [Userarios::class, 'createAnotacao']);
 Route::put('/anotacao/{id}', [Userarios::class, 'updateAnotacao']);
 Route::delete('/anotacao/{id}', [Userarios::class, 'destroyAnotacao']);
+
+Route::post('/arquivo', [arquivo::class, 'store']);

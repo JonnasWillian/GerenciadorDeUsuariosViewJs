@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Http\Requests\ArquivoRequest;
 use App\Models\arquivo AS ArquivoModel;
 
 class arquivo extends Controller
@@ -20,13 +21,14 @@ class arquivo extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ArquivoRequest $request)
     {
-        $request->validate([
-            'arquivo' => 'required|file',
-        ]);
-
         $caminho = $request->file('arquivo')->store('arquivos', 'public');
+
+        return response()->json([
+            'success' => true,
+            'Arquivo salvo:'  => $caminho
+        ]);
     }
 
     /**
