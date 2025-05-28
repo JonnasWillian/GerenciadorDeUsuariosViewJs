@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\ArquivoRequest;
+use App\Service\ArquivoService;
 use App\Models\arquivo AS ArquivoModel;
 
 class arquivo extends Controller
@@ -11,6 +12,12 @@ class arquivo extends Controller
     /**
      * Display a listing of the resource.
      */
+    protected $arquivoService;
+
+    public function __construct(ArquivoService $arquivoService){
+        $this->arquivoService = $arquivoService;
+    }
+
     public function index()
     {
         $arquivos = ArquivoModel::where('user_id', $request->user_id)->get();
@@ -23,7 +30,7 @@ class arquivo extends Controller
      */
     public function store(ArquivoRequest $request)
     {
-        $caminho = $request->file('arquivo')->store('arquivos', 'public');
+        $caminho = $this->arquivoService->salveFile($request->file('arquivo'));
 
         return response()->json([
             'success' => true,

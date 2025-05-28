@@ -1,178 +1,178 @@
 <script setup>
-import { ref, onMounted, computed, defineProps } from 'vue';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
-import axios from 'axios';
-import { vMaska } from 'maska/vue';
-import { PlusCircle, FileText, Paperclip, Trash2, Edit, Save, X, Download } from 'lucide-vue-next';
-import Swal from 'sweetalert2';
+    import { ref, onMounted, computed, defineProps } from 'vue';
+    import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
+    import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
+    import axios from 'axios';
+    import { vMaska } from 'maska/vue';
+    import { PlusCircle, FileText, Paperclip, Trash2, Edit, Save, X, Download } from 'lucide-vue-next';
+    import Swal from 'sweetalert2';
 
-const user = computed(() => usePage().props.auth.user);
-const props = defineProps({
-    cliente: Object
-});
-
-const usuario = ref(null);
-const anotacoes = ref([]);
-const arquivos = ref([]);
-const activeTab = ref('info');
-const editingNoteId = ref(null);
-const showAddNote = ref(false);
-const isUploading = ref(false);
-const uploadProgress = ref(0);
-const idPerfil = sessionStorage.getItem('idPerfil');
-
-const noteForm = useForm({
-    descricao: '',
-    usuario_id: user.value.id,
-});
-
-const editNoteForm = useForm({
-    id: '',
-    descricao: '',
-    usuario_id: user.value.id,
-});
-
-const messageError = async (messagem) => {
-    await Swal.fire({
-        title: 'Erro!',
-        text: messagem,
-        icon: 'error',
-        confirmButtonText: 'Ok'
+    const user = computed(() => usePage().props.auth.user);
+    const props = defineProps({
+        cliente: Object
     });
-}
 
-// Usuário
-const buscarUsuario = async (id) => {
-    try {
-        const response = await axios.get(`/api/usuarioPerfil/${id}`);
-        usuario.value = response.data[0];
+    const usuario = ref(null);
+    const anotacoes = ref([]);
+    const arquivos = ref([]);
+    const activeTab = ref('info');
+    const editingNoteId = ref(null);
+    const showAddNote = ref(false);
+    const isUploading = ref(false);
+    const uploadProgress = ref(0);
+    const idPerfil = sessionStorage.getItem('idPerfil');
 
-        console.log('usuario', usuario.value)
-    } catch (error) {
-        messageError("Erro ao buscar usuário!")
-        console.error("Erro ao buscar usuario:", error);
-    }
-};
+    const noteForm = useForm({
+        descricao: '',
+        usuario_id: user.value.id,
+    });
 
-const editarUsuario = async () => {
-    usuario.value.telefone = usuario.value.telefone.replace(/\D/g, '');
+    const editNoteForm = useForm({
+        id: '',
+        descricao: '',
+        usuario_id: user.value.id,
+    });
 
-    try {
-        const response = await axios.put(`api/usuarios/${usuario.value.id}`, {
-            ...usuario.value
-        })
-
+    const messageError = async (messagem) => {
         await Swal.fire({
-            title: 'Sucesso!',
-            text: 'Usuário atualizado com sucesso!',
-            icon: 'success',
+            title: 'Erro!',
+            text: messagem,
+            icon: 'error',
             confirmButtonText: 'Ok'
         });
-
-        router.visit(route('perfilUsuario'))
-    } catch (error) {
-        messageError("Erro ao atualizar usuário!")
-        console.log('error', error)
     }
-}
 
-// Anotação
-const buscarAnotacao = async (id) => {
-    try {
-        const response = await axios.get(`/api/anotacao/${id}`);
-        console.log('anotacoes', response.data)
-        anotacoes.value = response.data;
+    // Usuário
+    const buscarUsuario = async (id) => {
+        try {
+            const response = await axios.get(`/api/usuarioPerfil/${id}`);
+            usuario.value = response.data[0];
 
-    } catch (error) {
-        messageError("Erro ao buscar anotação usuário!")
-    }
-};
-
-const cadastrarAnotacao = async () => {
-    try {
-        const response = await axios.post(`api/anotacao`, {
-            ...noteForm
-        })
-
-        await Swal.fire({
-            title: 'Sucesso!',
-            text: 'Anotação criada com sucesso!',
-            icon: 'success',
-            confirmButtonText: 'Ok'
-        });
-
-        router.visit(route('perfilUsuario'))
-    } catch (error) {
-        messageError("Erro ao atualizar usuário!")
-        console.log('error', error)
-    }
-}
-
-const editarAnotacao = (anotacao) => {
-    editNoteForm.id = anotacao.id;;
-    editNoteForm.descricao = anotacao.descricao
-    editingNoteId.value = anotacao.id;
-}
-
-const cancelarEdicaoAnotacao = () => {
-    editingNoteId.value = null;
-}
-
-const salvarEdicaoAnotacao = async () => {
-    try {
-        console.log('editNoteForm', editNoteForm)
-        await axios.put(`api/anotacao/${editNoteForm.id}`,editNoteForm);
-        buscarAnotacao(idPerfil)
-        editingNoteId.value = null;
-    } catch (error) {
-        console.log('error', error)
-        messageError("Erro ao editar anotação!")
-    }
-}
-
-const excluirAnotacao = async (id) => {
-    try {
-        console.log('editNoteForm', id)
-        const result = await Swal.fire({
-            title: 'Confirmação de exclusão',
-            text: 'Você deseja, realmente apagar esta anotação?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Excluir',
-            cancelButtonText: 'Não',
-            reverseButtons: true
-        });
-
-        if (result.isConfirmed) {
-            try {
-                await axios.delete(`api/anotacao/${id}`);
-                buscarAnotacao(idPerfil)
-
-                await Swal.fire({
-                    title: 'Sucesso!',
-                    text: 'Anotação deletada com sucesso!',
-                    icon: 'success',
-                    confirmButtonText: 'Ok'
-                });
-            } catch (error) {
-                console.log(error)
-                messageError("Erro ao apagar anotação!")
-            }
+            console.log('usuario', usuario.value)
+        } catch (error) {
+            messageError("Erro ao buscar usuário!")
+            console.error("Erro ao buscar usuario:", error);
         }
-    } catch (error) {
-        console.log('error', error)
-    }
-}
+    };
 
-onMounted(() => {
-    if (idPerfil) {
-        buscarUsuario(idPerfil);
-        buscarAnotacao(idPerfil);
-    } else {
-        router.visit(route('dashboard'));
+    const editarUsuario = async () => {
+        usuario.value.telefone = usuario.value.telefone.replace(/\D/g, '');
+
+        try {
+            const response = await axios.put(`api/usuarios/${usuario.value.id}`, {
+                ...usuario.value
+            })
+
+            await Swal.fire({
+                title: 'Sucesso!',
+                text: 'Usuário atualizado com sucesso!',
+                icon: 'success',
+                confirmButtonText: 'Ok'
+            });
+
+            router.visit(route('perfilUsuario'))
+        } catch (error) {
+            messageError("Erro ao atualizar usuário!")
+            console.log('error', error)
+        }
     }
-});
+
+    // Anotação
+    const buscarAnotacao = async (id) => {
+        try {
+            const response = await axios.get(`/api/anotacao/${id}`);
+            console.log('anotacoes', response.data)
+            anotacoes.value = response.data;
+
+        } catch (error) {
+            messageError("Erro ao buscar anotação usuário!")
+        }
+    };
+
+    const cadastrarAnotacao = async () => {
+        try {
+            const response = await axios.post(`api/anotacao`, {
+                ...noteForm
+            })
+
+            await Swal.fire({
+                title: 'Sucesso!',
+                text: 'Anotação criada com sucesso!',
+                icon: 'success',
+                confirmButtonText: 'Ok'
+            });
+
+            router.visit(route('perfilUsuario'))
+        } catch (error) {
+            messageError("Erro ao atualizar usuário!")
+            console.log('error', error)
+        }
+    }
+
+    const editarAnotacao = (anotacao) => {
+        editNoteForm.id = anotacao.id;;
+        editNoteForm.descricao = anotacao.descricao
+        editingNoteId.value = anotacao.id;
+    }
+
+    const cancelarEdicaoAnotacao = () => {
+        editingNoteId.value = null;
+    }
+
+    const salvarEdicaoAnotacao = async () => {
+        try {
+            console.log('editNoteForm', editNoteForm)
+            await axios.put(`api/anotacao/${editNoteForm.id}`,editNoteForm);
+            buscarAnotacao(idPerfil)
+            editingNoteId.value = null;
+        } catch (error) {
+            console.log('error', error)
+            messageError("Erro ao editar anotação!")
+        }
+    }
+
+    const excluirAnotacao = async (id) => {
+        try {
+            console.log('editNoteForm', id)
+            const result = await Swal.fire({
+                title: 'Confirmação de exclusão',
+                text: 'Você deseja, realmente apagar esta anotação?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Excluir',
+                cancelButtonText: 'Não',
+                reverseButtons: true
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    await axios.delete(`api/anotacao/${id}`);
+                    buscarAnotacao(idPerfil)
+
+                    await Swal.fire({
+                        title: 'Sucesso!',
+                        text: 'Anotação deletada com sucesso!',
+                        icon: 'success',
+                        confirmButtonText: 'Ok'
+                    });
+                } catch (error) {
+                    console.log(error)
+                    messageError("Erro ao apagar anotação!")
+                }
+            }
+        } catch (error) {
+            console.log('error', error)
+        }
+    }
+
+    onMounted(() => {
+        if (idPerfil) {
+            buscarUsuario(idPerfil);
+            buscarAnotacao(idPerfil);
+        } else {
+            router.visit(route('dashboard'));
+        }
+    });
 </script>
 
 <template>
