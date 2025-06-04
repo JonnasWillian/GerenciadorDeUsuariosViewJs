@@ -21,4 +21,5 @@ Route::post('/anotacao', [Userarios::class, 'createAnotacao']);
 Route::put('/anotacao/{id}', [Userarios::class, 'updateAnotacao']);
 Route::delete('/anotacao/{id}', [Userarios::class, 'destroyAnotacao']);
 
-Route::post('/arquivo', [arquivo::class, 'store']);
+Route::apiResource('arquivos', arquivo::class);
+Route::post('buscarArquivo', [arquivo::class, 'index']);

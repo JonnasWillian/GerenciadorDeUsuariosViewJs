@@ -48,7 +48,6 @@
             const response = await axios.get(`/api/usuarioPerfil/${id}`);
             usuario.value = response.data[0];
 
-            console.log('usuario', usuario.value)
         } catch (error) {
             messageError("Erro ao buscar usuário!")
             console.error("Erro ao buscar usuario:", error);
@@ -81,7 +80,6 @@
     const buscarAnotacao = async (id) => {
         try {
             const response = await axios.get(`/api/anotacao/${id}`);
-            console.log('anotacoes', response.data)
             anotacoes.value = response.data;
 
         } catch (error) {
@@ -121,7 +119,6 @@
 
     const salvarEdicaoAnotacao = async () => {
         try {
-            console.log('editNoteForm', editNoteForm)
             await axios.put(`api/anotacao/${editNoteForm.id}`,editNoteForm);
             buscarAnotacao(idPerfil)
             editingNoteId.value = null;
@@ -133,7 +130,6 @@
 
     const excluirAnotacao = async (id) => {
         try {
-            console.log('editNoteForm', id)
             const result = await Swal.fire({
                 title: 'Confirmação de exclusão',
                 text: 'Você deseja, realmente apagar esta anotação?',
@@ -165,10 +161,24 @@
         }
     }
 
+    // arquivos
+    const buscarAnexo = async (id) => {
+        try {
+            console.log(id)
+            const response = await axios.post(`/api/buscarArquivo/`, {user_id: id});
+            console.log('response anexo', response.data)
+            anotacoes.value = response.data;
+
+        } catch (error) {
+            messageError("Erro ao buscar anexo do usuário!")
+        }
+    };
+
     onMounted(() => {
         if (idPerfil) {
             buscarUsuario(idPerfil);
             buscarAnotacao(idPerfil);
+            buscarAnexo(idPerfil);
         } else {
             router.visit(route('dashboard'));
         }
