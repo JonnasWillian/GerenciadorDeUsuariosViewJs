@@ -17,8 +17,6 @@ class ArquivoRequest extends FormRequest
             'arquivo' => [
                 'required',
                 'file',
-                'max: 3062',
-                'mimes: pdf,jpeg,png'
             ]
         ];
     }
@@ -28,8 +26,6 @@ class ArquivoRequest extends FormRequest
         return [
             'arquivo.required' => 'O campo arquivo é obrigatorio',
             'arquivo.file' => 'Deve ser enviado um arquivo',
-            'arquivo.max' => 'O arquivo deve ter no máximo 3mb',
-            'arquivo.mimes' => 'Suportamos apenas os arquivos do tipo pdf,jpeg ou png',
         ];
     }
 }

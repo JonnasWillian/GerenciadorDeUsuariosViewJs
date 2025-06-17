@@ -4,7 +4,7 @@
     import { Head, Link, useForm, usePage, router } from '@inertiajs/vue3';
     import axios from 'axios';
     import { vMaska } from 'maska/vue';
-    import { PlusCircle, FileText, Paperclip, Trash2, Edit, Save, X, Download } from 'lucide-vue-next';
+    import { PlusCircle, FileText, Paperclip, Trash2, Edit, Save, X, Download, Upload} from 'lucide-vue-next';
     import Swal from 'sweetalert2';
 
     const user = computed(() => usePage().props.auth.user);
@@ -21,6 +21,7 @@
     const isUploading = ref(false);
     const uploadProgress = ref(0);
     const idPerfil = sessionStorage.getItem('idPerfil');
+    const arquivosPendentes = ref([]);
 
     const noteForm = useForm({
         descricao: '',
@@ -173,6 +174,82 @@
             messageError("Erro ao buscar anexo do usuário!")
         }
     };
+
+    const adicionarArquivos = (event) => {
+        const files = Array.from(event.target.files);
+
+        files.forEach(file => {
+            const jaExiste = arquivosPendentes.value.some( arquivo =>
+                arquivo.name === file.name && arquivo.size === file.size
+            )
+
+            if (!jaExiste) {
+                arquivosPendentes.value.push({
+                    id: Date.now() + Math.random,
+                    file: file,
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    isPendng: true,
+                })
+            }
+        });
+
+        event.target.value = null;
+    }
+
+    const removerArquivoPendente = async (id) => {
+        arquivosPendentes.value = arquivosPendentes.value.filter(arquivo => arquivo.id !== id)
+    }
+
+    const salvarArquivos = async () => {
+        if (arquivosPendentes.value.length === 0) return;
+
+        isUploading.value = true;
+        uploadProgress.value = 0;
+
+        try {
+            const totalArquivos = arquivosPendentes.value.length;
+            let arquivosProcessados = 0;
+
+            for (const arquivoPendente of arquivosPendentes.value) {
+                const formData = new FormData();
+
+                formData.append('arquivo', arquivoPendente.file)
+                formData.append('nome', arquivoPendente.name)
+                formData.append('cliente_id', cliente.value.id)
+                formData.append('user_id', idPerfil)
+
+                await axios.post('api/arquivos', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+
+                arquivosProcessados++;
+                uploadProgress.value = Math.round((arquivosProcessados / totalArquivos) * 100)
+            }
+
+            arquivosPendentes.value = []
+
+            buscarAnexo(idPerfil)
+
+            await Swal.fire({
+                title: 'Sucesso!',
+                text: `${totalArquivos} arquivo(s) enviado(s) com sucesso!`,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+        } catch (error) {
+            
+        }
+    }
+
+    const formatarTamanho = (bytes) => {
+        if (bytes < 1024) return bytes + ' B';
+        else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
+        else return (bytes / 1048576).toFixed(2) + ' MB';
+    }
 
     onMounted(() => {
         if (idPerfil) {
@@ -403,65 +480,112 @@
                                 <h3 class="text-lg font-medium text-gray-900">Arquivos</h3>
                                 <label class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer">
                                     <Paperclip class="w-4 h-4 mr-2" />
-                                    Anexar Arquivo
-                                    <input type="file" class="hidden" @change="uploadArquivo" />
+                                    Selecionar Arquivos
+                                    <input type="file" multiple class="hidden" @change="adicionarArquivos" />
                                 </label>
                             </div>
 
-                            <!-- Progresso de upload -->
-                            <div v-if="isUploading" class="bg-gray-50 p-4 rounded-md">
-                                <div class="flex items-center">
-                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                        <div class="bg-blue-600 h-2.5 rounded-full" :style="{ width: uploadProgress + '%' }"></div>
+                            <!-- Seção de Arquivos Pendentes (Staging) -->
+                            <div v-if="arquivosPendentes.length > 0" class="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                                <div class="flex justify-between items-center mb-3">
+                                    <h4 class="text-sm font-medium text-yellow-800">
+                                        <Upload class="w-4 h-4 inline mr-1" />
+                                        Arquivos Pendentes ({{ arquivosPendentes.length }})
+                                    </h4>
+                                    <div class="flex space-x-2">
+                                        <button @click="arquivosPendentes = []" class="text-sm text-gray-500 hover:text-gray-700">
+                                            Limpar Todos
+                                        </button>
+                                        <button 
+                                            @click="salvarArquivos" 
+                                            :disabled="isUploading"
+                                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                                        >
+                                            <Save class="w-4 h-4 mr-2" />
+                                            {{ isUploading ? 'Salvando...' : 'Salvar Arquivos' }}
+                                        </button>
                                     </div>
-                                    <span class="ml-2 text-sm text-gray-500">{{ uploadProgress }}%</span>
+                                </div>
+
+                                <!-- Lista de Arquivos Pendentes -->
+                                <div class="space-y-2">
+                                    <div v-for="arquivo in arquivosPendentes" :key="arquivo.id" class="flex items-center justify-between bg-white p-3 rounded border">
+                                        <div class="flex items-center space-x-3">
+                                            <Paperclip class="w-4 h-4 text-gray-400" />
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">{{ arquivo.name }}</p>
+                                                <p class="text-xs text-gray-500">{{ formatarTamanho(arquivo.size) }}</p>
+                                            </div>
+                                        </div>
+                                        <button @click="removerArquivoPendente(arquivo.id)" class="text-red-500 hover:text-red-700">
+                                            <X class="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Progresso de Upload -->
+                                <div v-if="isUploading" class="mt-4">
+                                    <div class="flex items-center">
+                                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                            <div class="bg-green-600 h-2.5 rounded-full transition-all duration-300" :style="{ width: uploadProgress + '%' }"></div>
+                                        </div>
+                                        <span class="ml-2 text-sm text-gray-600">{{ uploadProgress }}%</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Lista de arquivos -->
-                            <div v-if="arquivos.length > 0" class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tamanho</th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        <tr v-for="arquivo in arquivos" :key="arquivo.id">
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="flex items-center">
-                                                    <Paperclip class="flex-shrink-0 h-4 w-4 text-gray-400 mr-2" />
-                                                    <div class="text-sm font-medium text-gray-900">{{ arquivo.nome }}</div>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-500">{{ formatarTamanho(arquivo.tamanho || 0) }}</div>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm text-gray-500">{{ arquivo.descricao }}</div>    
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div class="flex space-x-2">
-                                                    <a :href="arquivo.url" download class="text-blue-600 hover:text-blue-900">
-                                                        <Download class="w-4 h-4" />
-                                                    </a>
-                                                    <button @click="excluirArquivo(arquivo.id)" class="text-red-600 hover:text-red-900">
-                                                        <Trash2 class="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <!-- Seção de Arquivos Salvos -->
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-700 mb-3">
+                                    <FileText class="w-4 h-4 inline mr-1" />
+                                    Arquivos Salvos
+                                </h4>
+                                
+                                <div v-if="arquivos.length > 0" class="overflow-x-auto">
+                                    <table class="min-w-full divide-y divide-gray-200">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tamanho</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <tr v-for="arquivo in arquivos" :key="arquivo.id">
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <Paperclip class="flex-shrink-0 h-4 w-4 text-gray-400 mr-2" />
+                                                        <div class="text-sm font-medium text-gray-900">{{ arquivo.nome }}</div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm text-gray-500">{{ formatarTamanho(arquivo.tamanho || 0) }}</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <div class="text-sm text-gray-500">{{ formatarData(arquivo.created_at) }}</div>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <div class="flex space-x-2">
+                                                        <a :href="arquivo.url" download class="text-blue-600 hover:text-blue-900" title="Download">
+                                                            <Download class="w-4 h-4" />
+                                                        </a>
+                                                        <button @click="excluirArquivo(arquivo.id)" class="text-red-600 hover:text-red-900" title="Excluir">
+                                                            <Trash2 class="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
 
-                            <div v-else class="text-center py-8">
-                                <Paperclip class="w-12 h-12 mx-auto text-gray-400" />
-                                <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum arquivo</h3>
-                                <p class="mt-1 text-sm text-gray-500">Comece anexando arquivos para este usuario.</p>
+                                <!-- Mensagem quando não há arquivos salvos -->
+                                <div v-else class="text-center py-8 bg-gray-50 rounded-md">
+                                    <Paperclip class="w-12 h-12 mx-auto text-gray-400" />
+                                    <h3 class="mt-2 text-sm font-medium text-gray-900">Nenhum arquivo salvo</h3>
+                                    <p class="mt-1 text-sm text-gray-500">Os arquivos aparecerão aqui após serem salvos.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
