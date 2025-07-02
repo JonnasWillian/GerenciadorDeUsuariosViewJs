@@ -18,7 +18,7 @@ class arquivo extends Controller
     public function index(Request $request)
     {
         $arquivos = ArquivoModel::where('usuario_id', $request->user_id)->get();
-        
+
         return response()->json($arquivos);
     }
 
@@ -26,8 +26,15 @@ class arquivo extends Controller
     {
         $caminho = $this->arquivoService->salveFile($request->file('arquivo'));
 
+        $arquivoSalvo = ArquivoModel::create([
+            'nome' => $request->nome ?: '',
+            'local' => $caminho,
+            'usuario_id' => $request->usuario_id
+        ]);
+
         return response()->json([
             'success' => true,
+            'data' => $arquivoSalvo,
             'Arquivo salvo:'  => $caminho
         ]);
     }

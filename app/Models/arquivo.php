@@ -12,6 +12,7 @@ class arquivo extends Model
 
     protected $fillable = [
         'local',
+        'nome',
         'usuario_id',
     ];
 }

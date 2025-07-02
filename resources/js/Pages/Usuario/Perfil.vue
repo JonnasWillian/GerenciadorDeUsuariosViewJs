@@ -165,9 +165,7 @@
     // arquivos
     const buscarAnexo = async (id) => {
         try {
-            console.log(id)
             const response = await axios.post(`/api/buscarArquivo/`, {user_id: id});
-            console.log('response anexo', response.data)
             anotacoes.value = response.data;
 
         } catch (error) {
@@ -217,8 +215,7 @@
 
                 formData.append('arquivo', arquivoPendente.file)
                 formData.append('nome', arquivoPendente.name)
-                formData.append('cliente_id', cliente.value.id)
-                formData.append('user_id', idPerfil)
+                formData.append('usuario_id', idPerfil)
 
                 await axios.post('api/arquivos', formData, {
                     headers: {

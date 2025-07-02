@@ -17,13 +17,15 @@ class ArquivoRequest extends FormRequest
             'arquivo' => [
                 'required',
                 'file',
-            ]
+            ],
+            'usuario_id' => 'required'
         ];
     }
 
     public function messages()
     {
         return [
+            'usuario_id.required' => 'O usuário detentor do arquivo é obrigatório',
             'arquivo.required' => 'O campo arquivo é obrigatorio',
             'arquivo.file' => 'Deve ser enviado um arquivo',
         ];
