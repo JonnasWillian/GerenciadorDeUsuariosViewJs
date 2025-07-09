@@ -14,5 +14,6 @@ class arquivo extends Model
         'local',
         'nome',
         'usuario_id',
+        'updated_at'
     ];
 }

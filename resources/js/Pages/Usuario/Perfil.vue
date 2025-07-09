@@ -166,7 +166,7 @@
     const buscarAnexo = async (id) => {
         try {
             const response = await axios.post(`/api/buscarArquivo/`, {user_id: id});
-            anotacoes.value = response.data;
+            arquivos.value = response.data;
 
         } catch (error) {
             messageError("Erro ao buscar anexo do usuário!")
@@ -246,6 +246,39 @@
         if (bytes < 1024) return bytes + ' B';
         else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
         else return (bytes / 1048576).toFixed(2) + ' MB';
+    }
+
+    const excluirArquivo = async (id) => {
+        try {
+            const result = await Swal.fire({
+                title: 'Confirmação de exclusão',
+                text: 'Você deseja, realmente apagar este arquivo?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Excluir',
+                cancelButtonText: 'Não',
+                reverseButtons: true
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    await axios.delete(`api/arquivos/${id}`);
+                    buscarAnexo(idPerfil)
+
+                    await Swal.fire({
+                        title: 'Sucesso!',
+                        text: 'Anotação deletada com sucesso!',
+                        icon: 'success',
+                        confirmButtonText: 'Ok'
+                    });
+                } catch (error) {
+                    console.log(error)
+                    messageError("Erro ao apagar anotação!")
+                }
+            }
+        } catch (error) {
+            console.log('error', error)
+        }
     }
 
     onMounted(() => {
@@ -544,7 +577,6 @@
                                             <tr>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tamanho</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
                                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                                             </tr>
                                         </thead>
@@ -559,12 +591,9 @@
                                                 <td class="px-6 py-4 whitespace-nowrap">
                                                     <div class="text-sm text-gray-500">{{ formatarTamanho(arquivo.tamanho || 0) }}</div>
                                                 </td>
-                                                <td class="px-6 py-4 whitespace-nowrap">
-                                                    <div class="text-sm text-gray-500">{{ formatarData(arquivo.created_at) }}</div>
-                                                </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                     <div class="flex space-x-2">
-                                                        <a :href="arquivo.url" download class="text-blue-600 hover:text-blue-900" title="Download">
+                                                        <a :href="`/storage/${arquivo.local}`" download class="text-blue-600 hover:text-blue-900" title="Download">
                                                             <Download class="w-4 h-4" />
                                                         </a>
                                                         <button @click="excluirArquivo(arquivo.id)" class="text-red-600 hover:text-red-900" title="Excluir">
