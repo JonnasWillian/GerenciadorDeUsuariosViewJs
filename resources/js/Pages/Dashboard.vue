@@ -108,7 +108,7 @@
             <div v-if="isModalOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                 <div class="w-full max-w-md p-6 bg-white rounded-lg  shadow-lg">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-bold" >Adicionar usuário</h2>
+                        <h2 class="text-xl font-bold" >Adicionar Lead</h2>
                         <button @click="closeModal" class="p-2 text-gray-500 hover:text-gray-700 focus:outline-none">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -118,10 +118,10 @@
 
                     <form @submit.prevent="addUsuario">
                         <div class="space-y-4">
-                            <input type="text" placeholder="Nome" v-model="form.nome" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                            <input type="email" placeholder="Email" v-model="form.email" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                            <input type="tel" placeholder="Telefone" v-model="form.telefone" v-maska data-maska="(##) #####-####" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-                            <input type="text" placeholder="Descrição" v-model="form.descricao" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <input type="text" placeholder="Nome*" v-model="form.nome" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <input type="email" placeholder="Email*" v-model="form.email" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <input type="tel" placeholder="Telefone*" v-model="form.telefone" v-maska data-maska="(##) #####-####" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <input type="text" placeholder="Descrição*" v-model="form.descricao" class="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
                         </div>
                         <div class="flex justify-end mt-6">
                             <button type="button" class="px-4 py-2 mr-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none">Cancelar</button>
