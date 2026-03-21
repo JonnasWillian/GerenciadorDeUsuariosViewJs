@@ -66,7 +66,7 @@
     <AuthenticatedLayout>
         <template #header>
             <h2 class="text-xl font-semibold leading-tight text-gray-800">
-                Dashboard
+                Lista de Leads
             </h2>
         </template>
 
